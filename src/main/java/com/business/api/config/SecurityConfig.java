@@ -1,7 +1,5 @@
 package com.business.api.config;
 
-import java.util.Arrays;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,9 +12,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.reactive.CorsConfigurationSource;
-import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import com.business.api.security.JWTAuthenticationFilter;
 import com.business.api.security.JWTAuthorizationFilter;
@@ -34,17 +29,33 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	private JWTUtil jwtUtil;
 	
 	private static final String[] PUBLIC_MATCHERS_GET = {
-		"/categorias/**"
+		"/categorias/**", "/pessoas/**", "/lancamentos/**"
+	};
+	
+	private static final String[] PUBLIC_MATCHERS_POST = {
+			"/categorias/**", "/pessoas/**", "/lancamentos/**"
+	};
+	
+	private static final String[] PUBLIC_MATCHERS_PUT = {
+			"/categorias/**", "/pessoas/**", "/lancamentos/**"
+	};
+	
+	private static final String[] PUBLIC_MATCHERS_DELETE = {
+			"/categorias/**", "/pessoas/**", "/lancamentos/**"
 	};
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 	
 		http.cors().and().csrf().disable();
-		
+				
 		http.authorizeRequests()
 			.antMatchers(HttpMethod.GET, PUBLIC_MATCHERS_GET).permitAll()
+			.antMatchers(HttpMethod.POST, PUBLIC_MATCHERS_POST).permitAll()
+			.antMatchers(HttpMethod.PUT, PUBLIC_MATCHERS_PUT).permitAll()
+			.antMatchers(HttpMethod.DELETE, PUBLIC_MATCHERS_DELETE).permitAll()
 			.anyRequest().authenticated();
+			
 		
 		http.addFilter(new JWTAuthenticationFilter(authenticationManager(), jwtUtil));
 		http.addFilter(new JWTAuthorizationFilter(authenticationManager(), jwtUtil, userDetailsService));
@@ -55,15 +66,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder());
-	}
-	
-	@Bean
-	CorsConfigurationSource configurationSource() {
-		CorsConfiguration configuration = new CorsConfiguration().applyPermitDefaultValues();
-		configuration.setAllowedMethods(Arrays.asList("POST", "PUT", "DELETE", "OPTIONS"));
-		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", configuration);
-		return source;
 	}
 	
 	@Bean
